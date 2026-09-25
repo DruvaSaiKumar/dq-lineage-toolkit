@@ -1,0 +1,9 @@
+dataset: fct_orders
+table: fct_orders
+checks:
+  - { type: unique, columns: [order_id] }
+  - { type: not_null, column: net_amount }
+  - { type: range, column: net_amount, min: 0 }
+  # Unknown customers are kept on purpose, so a NULL country is expected to be rare but visible.
+  - { type: not_null, column: country, severity: warn }
+  - { type: row_count, min: 1000 }

@@ -1,0 +1,18 @@
+# Schemas of the tables the models read from. Tags declared here (e.g. pii) are propagated
+# downstream by `dqkit tags`. `source('raw', 'orders')` in a model refers to the table raw_orders.
+sources:
+  raw_orders:
+    columns:
+      order_id: int
+      customer_id: int
+      amount: double
+      discount: double
+      status: text
+      order_ts: timestamp
+  raw_customers:
+    columns:
+      customer_id: int
+      name: { type: text, tags: [pii] }
+      email: { type: text, tags: [pii] }
+      country: text
+      signup_ts: timestamp

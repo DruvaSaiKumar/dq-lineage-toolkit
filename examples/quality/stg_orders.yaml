@@ -1,0 +1,18 @@
+dataset: stg_orders
+table: stg_orders
+sample_size: 5
+checks:
+  - { type: not_null, column: order_id }
+  - { type: unique, columns: [order_id] }
+  # A small share of orders without a customer is tolerated (reported, not failed).
+  - { type: not_null, column: customer_id, severity: warn, max_failure_pct: 1 }
+  - { type: accepted_values, column: status, values: [PENDING, PAID, SHIPPED, DELIVERED, CANCELLED] }
+  - { type: range, column: amount, min: 0, max: 100000 }
+  - { type: relationships, column: customer_id, to_table: stg_customers, to_column: customer_id }
+  - { type: freshness, column: order_ts, max_age_hours: 48 }
+  - { type: row_count, min: 1000 }
+  - { type: row_count_change, max_pct: 25 }
+  # Negative amounts are reported by the range check above, so exclude them here.
+  - type: custom_sql
+    name: discount_not_above_amount
+    sql: "SELECT order_id, amount, discount FROM stg_orders WHERE amount >= 0 AND discount > amount"

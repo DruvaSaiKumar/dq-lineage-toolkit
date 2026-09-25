@@ -1,0 +1,15 @@
+dataset: stg_customers
+table: stg_customers
+checks:
+  - { type: not_null, column: customer_id }
+  - { type: unique, columns: [customer_id] }
+  - { type: regex, column: email, pattern: '^[^@\s]+@[^@\s]+\.[a-z]+$' }
+  - { type: accepted_values, column: country, values: [US, GB, IN, DE] }
+  # The data contract: downstream models rely on exactly these columns and type families.
+  - type: schema_contract
+    columns:
+      customer_id: integer
+      name: string
+      email: string
+      country: string
+      signup_ts: timestamp

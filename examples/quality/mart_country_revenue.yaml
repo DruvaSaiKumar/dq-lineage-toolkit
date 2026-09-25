@@ -1,0 +1,6 @@
+dataset: mart_country_revenue
+table: mart_country_revenue
+checks:
+  - { type: not_null, column: revenue }
+  - { type: not_null, column: country, severity: warn }
+  - { type: range, column: revenue, min: 0 }

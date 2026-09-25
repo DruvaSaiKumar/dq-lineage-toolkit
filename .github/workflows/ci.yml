@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: pip install -e .[dev]
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest -q
+      - name: Demo finds the injected defects (exit 1) and a clean load passes (exit 0)
+        run: |
+          dqkit demo --workdir /tmp/bad || test $? -eq 1
+          dqkit demo --workdir /tmp/ok --clean
+      - name: Coverage gate and impact analysis run from the CLI
+        run: |
+          dqkit coverage examples/models --sources examples/sources.yml "examples/quality/*.yaml" --fail-under 40
+          dqkit impact examples/models raw_orders.amount --sources examples/sources.yml
