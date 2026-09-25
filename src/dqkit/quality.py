@@ -84,9 +84,6 @@ class DatasetResult:
         return {s: sum(r.status == s for r in self.results) for s in (PASS, FAIL, WARN, ERROR)}
 
 
-# ---- configuration ----------------------------------------------------------------------------
-
-
 def parse_dataset_config(raw: Any) -> DatasetConfig:
     if not isinstance(raw, dict):
         raise ConfigError("config root must be a mapping")
@@ -137,9 +134,6 @@ def columns_covered(check: dict[str, Any]) -> set[str]:
     return set()
 
 
-# ---- SQL helpers ------------------------------------------------------------------------------
-
-
 def _q(ident: str) -> str:
     return '"' + ident.replace('"', '""') + '"'
 
@@ -181,9 +175,6 @@ def check_name(check: dict[str, Any]) -> str:
     return f"{kind}:{target}" if target else kind
 
 
-# ---- engine -----------------------------------------------------------------------------------
-
-
 class Runner:
     def __init__(self, con, cfg: DatasetConfig, now: datetime, baseline: dict[str, float]):
         self.con, self.cfg, self.now, self.baseline = con, cfg, now, baseline
@@ -208,7 +199,7 @@ class Runner:
     def total(self) -> int:
         return int(self.scalar(f"SELECT COUNT(*) FROM {self.table}"))
 
-    # -- row-level checks: a predicate that is true for violating rows --
+    # row-level checks: each builds a predicate that is true for violating rows
     def _predicate(self, check: dict[str, Any]) -> str | None:
         kind = check["type"]
         if kind == "not_null":
@@ -377,9 +368,6 @@ def run_dataset(
                             detail=f"{type(exc).__name__}: {exc}")
             )  # fmt: skip
     return DatasetResult(cfg.dataset, cfg.table, started, results)
-
-
-# ---- history (for row_count_change) -----------------------------------------------------------
 
 
 def load_baseline(history_path: str | Path | None, dataset: str) -> dict[str, float]:

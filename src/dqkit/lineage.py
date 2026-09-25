@@ -73,7 +73,6 @@ class LineageGraph:
     tags: dict[ColumnRef, set[str]] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
 
-    # ---- traversal -------------------------------------------------------------------------
     def _walk(self, start: ColumnRef, forward: bool) -> list[Impact]:
         """Breadth-first over column edges. Tracks whether a pure-copy path exists to each column."""
         step: dict[ColumnRef, list[ColumnEdge]] = {}
@@ -124,7 +123,6 @@ class LineageGraph:
                     queue.append(down)
         return sorted(out)
 
-    # ---- tags --------------------------------------------------------------------------------
     def inherited_tags(self) -> dict[ColumnRef, dict[str, str]]:
         """Tags that reach each downstream column: {column: {tag: direct|derived}}."""
         result: dict[ColumnRef, dict[str, str]] = {}
@@ -137,7 +135,6 @@ class LineageGraph:
                         slot[tag] = hit.kind
         return result
 
-    # ---- output ------------------------------------------------------------------------------
     def to_mermaid(self) -> str:
         lines = ["flowchart LR"]
         for name in sorted(self.source_columns):
@@ -162,9 +159,6 @@ class LineageGraph:
             "inherited_tags": {str(c): t for c, t in sorted(inherited.items())},
             "warnings": self.warnings,
         }
-
-
-# ---- building the graph ---------------------------------------------------------------------
 
 
 def render(sql: str, model: str) -> str:

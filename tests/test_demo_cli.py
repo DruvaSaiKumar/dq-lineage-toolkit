@@ -54,7 +54,7 @@ def test_customer_findings(demo):
     assert c["schema_contract"].status == PASS
 
 
-def test_messy_but_valid_values_are_cleaned_by_staging_not_reported(demo):
+def test_messy_values_cleaned_in_staging(demo):
     """Padded/upper-cased text was injected into 'clean' rows; staging must absorb it."""
     c = results_for(demo)
     assert c["stg_orders"]["accepted_values:status"].failing == DEFECTS["bad_status"]  # not +30 padded
@@ -72,7 +72,7 @@ def test_defects_propagate_to_the_fact_and_the_mart(demo):
     assert r["mart_country_revenue"]["not_null:country"].failing == 1  # the NULL-country group
 
 
-def test_row_count_change_uses_the_clean_baseline_recorded_by_the_demo(demo):
+def test_row_count_change_baseline(demo):
     """The demo checks a clean load first and records it, then checks the defective load against it."""
     history = [json.loads(line) for line in (demo / "history.jsonl").read_text().splitlines()]
     stg = [h["metrics"]["row_count_change"] for h in history if h["dataset"] == "stg_orders"]

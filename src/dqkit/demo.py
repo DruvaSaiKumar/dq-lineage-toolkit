@@ -1,6 +1,6 @@
 """Synthetic demo warehouse for the example models, with a known set of injected defects.
 
-Nothing here comes from any real company or dataset. The raw tables are generated with a seeded
+The data is synthetic. The raw tables are generated with a seeded
 RNG, the example models are then executed in dependency order, and the quality checks run on the
 resulting tables, so a defect in raw data is caught at the layer where it becomes visible.
 """
@@ -127,7 +127,7 @@ def _bulk_insert(con, table: str, rows: list[list], chunk: int = 500) -> None:
 
 
 def build_models(con, graph: LineageGraph) -> None:
-    """Materialise every model as a table, upstream first."""
+    """Materialize every model as a table, upstream first."""
     for name in graph.order:
         con.execute(f"DROP TABLE IF EXISTS {name}")
         con.execute(f"CREATE TABLE {name} AS {graph.models[name]}")

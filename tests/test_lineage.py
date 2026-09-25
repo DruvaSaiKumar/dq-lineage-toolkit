@@ -32,10 +32,7 @@ def sources(tmp_path, body):
     return path
 
 
-# ---- Jinja rendering ---------------------------------------------------------------------------
-
-
-def test_render_replaces_ref_source_and_drops_config_and_comments():
+def test_render_ref_source_config():
     sql = (
         "{{ config(materialized='table') }}{# note #} "
         "select 1 from {{ ref('a') }} join {{ source('raw', 'b') }}"
@@ -48,9 +45,6 @@ def test_render_refuses_other_jinja():
         render("select {{ var('x') }} from t", "m")
     with pytest.raises(LineageError, match="unsupported Jinja"):
         render("{% if x %}select 1{% endif %}", "m")
-
-
-# ---- the example graph -------------------------------------------------------------------------
 
 
 def test_models_run_in_dependency_order(graph):
@@ -105,7 +99,7 @@ def test_downstream_tables(graph):
     ]  # fmt: skip
 
 
-def test_pii_tag_reaches_every_downstream_copy_and_transform(graph):
+def test_pii_tag_propagation(graph):
     inherited = graph.inherited_tags()
     carrying = {str(c) for c, tags in inherited.items() if "pii" in tags}
     assert carrying == {
@@ -131,10 +125,7 @@ def test_mermaid_and_json_outputs(graph):
     assert data["inherited_tags"]["dim_customer.email"] == {"pii": "derived"}
 
 
-# ---- edge cases with small purpose-built models ------------------------------------------------
-
-
-def test_a_column_computed_inside_a_cte_is_not_mistaken_for_a_copy(tmp_path):
+def test_cte_computed_column_is_not_a_copy(tmp_path):
     (tmp_path / "m").mkdir()
     src = sources(tmp_path, "sources:\n  t:\n    columns:\n      a: int\n")
     m = models(tmp_path / "m", x="with c as (select a * 2 as b from t) select b from c")

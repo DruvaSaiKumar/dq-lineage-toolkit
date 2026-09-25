@@ -56,14 +56,14 @@ def test_not_null(con):
     assert one(con, {"type": "not_null", "column": "id"}).status == PASS
 
 
-def test_unique_counts_surplus_rows_and_samples_the_duplicates(con):
+def test_unique_counts_surplus_rows(con):
     r = one(con, {"type": "unique", "columns": ["id"]})
     assert (r.status, r.failing) == (FAIL, 1)
     assert r.samples == [{"id": 3, "occurrences": 2}]
     assert one(con, {"type": "unique", "columns": ["id", "status"]}).status == PASS  # composite key
 
 
-def test_accepted_values_ignores_nulls_and_is_injection_safe(con):
+def test_accepted_values_nulls_and_quoting(con):
     r = one(con, {"type": "accepted_values", "column": "status", "values": ["ACTIVE", "PENDING", "O'Brien"]})
     assert (r.status, r.failing) == (FAIL, 1)  # only 'UNKNOWN'
 
@@ -85,7 +85,7 @@ def test_relationships_skips_nulls_and_counts_orphans(con):
     assert (r.status, r.failing, r.total) == (FAIL, 1, 4)  # dept 99; the NULL is excluded from the total
 
 
-def test_tolerance_lets_a_small_failure_share_pass_but_reports_it(con):
+def test_max_failure_pct_passes_but_is_reported(con):
     r = one(con, {"type": "not_null", "column": "email", "max_failure_pct": 25})
     assert (r.status, r.failing) == (PASS, 1)
     assert "within the 25% tolerance" in r.detail
@@ -157,7 +157,7 @@ def test_custom_sql_counts_returned_rows(con):
     assert (r.name, r.status, r.failing) == ("old_and_active", FAIL, 1)
 
 
-def test_a_broken_check_is_an_error_and_the_others_still_run(con):
+def test_broken_check_does_not_stop_others(con):
     results = run(
         con,
         {"type": "not_null", "column": "nope"},
@@ -199,7 +199,7 @@ def test_config_validation(raw):
         parse_dataset_config(raw)
 
 
-def test_results_are_json_serialisable(con):
+def test_results_are_json_serializable(con):
     results = run(
         con,
         {"type": "unique", "columns": ["id"]},
